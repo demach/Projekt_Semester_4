@@ -6,6 +6,9 @@ import numpy as np
 
 import sqlite3
 from datetime import datetime
+
+import json
+
 broker = "192.168.178.77"
 port = 1883
 topic = "/home/#"
@@ -19,6 +22,7 @@ MAX = 1000
 array = np.zeros((MAX, INPUTS), np.float16)
 
 count = 0
+location = ""
 
 def connect_mqtt() -> mqtt_client:
     def on_connect(client, userdata, flags, rc):
@@ -48,12 +52,18 @@ def publish(client):
 
 
 def subscribe(client: mqtt_client):
-
+    global array
     count = 0
 
     def on_message(client, userdata, msg):
         global count
         #print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
+        if msg.topic == "/home/start_measurement":
+            data = json.loads(msg.payload.decode())
+            location = data[0]
+            MAX = data[1]
+            INPUTS = data[2]
+            array = np.zeros((MAX, INPUTS), np.float16)
         if msg.topic == "/home/anotherone":
             array[count] = msg.payload.decode()
             count += 1
