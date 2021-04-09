@@ -4,6 +4,8 @@ import time
 from paho.mqtt import client as mqtt_client
 import numpy as np
 
+import sqlite3
+from datetime import datetime
 broker = "192.168.178.77"
 port = 1883
 topic = "/home/#"
@@ -60,6 +62,7 @@ def subscribe(client: mqtt_client):
             #print(count, array)
         if msg.topic == "/home/finish":
             print(count, np.average(1.0104* array))
+            write_data()
             count = 0
             print("ready for next start")
             #raise KeyError
@@ -69,16 +72,40 @@ def subscribe(client: mqtt_client):
     client.subscribe(topic)
     client.on_message = on_message
 
+def write_data():
+    verbindung = sqlite3.connect("./datenbank.db")
+    cursor = verbindung.cursor()
+
+    cursor.execute("""CREATE TABLE if not exists ALLE_DATEN(
+    ID INTEGER PRIMARY KEY ASC AUTOINCREMENT,
+    Zeitstempel text UNIQUE,
+    Beleuchtung real,
+    Temperatur real)""")
+
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    avgTemperatur = round(np.average(array[:,0]), 2)
+    avgBeleuchtung = round(np.average(array[:,1]), 2)
+
+    if avgTemperatur != 0.0 and avgBeleuchtung != 0.0:
+        cursor.execute(
+            """INSERT INTO Alle_Daten (ID,Zeitstempel,Beleuchtung,Temperatur)VALUES(null,'{0}','{1}','{2}');""".format(
+                timestamp, avgBeleuchtung, avgTemperatur))
+
+    ergebnisSQL = cursor.execute("SELECT * from ALLE_DATEN")
+    ergebnisSQL
+
+    verbindung.commit()
+    cursor.close()
+    verbindung.close()
 
 
 
 def run():
     client = connect_mqtt()
-    #client.loop_start()
-    #publish(client)
-
     subscribe(client)
     client.loop_forever()
+
 
 
 if __name__ == '__main__':
