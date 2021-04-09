@@ -19,6 +19,7 @@ MAX = 1000
 array = np.zeros((MAX, INPUTS), np.float16)
 
 count = 0
+location = ""
 
 def connect_mqtt() -> mqtt_client:
     def on_connect(client, userdata, flags, rc):
@@ -53,7 +54,10 @@ def subscribe(client: mqtt_client):
 
     def on_message(client, userdata, msg):
         global count
+        global location
         #print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
+        if msg.topic == "/home/start_measurement":
+            location = msg.payload.decode()
         if msg.topic == "/home/anotherone":
             array[count] = msg.payload.decode()
             count += 1
@@ -78,7 +82,8 @@ def write_data():
 
     cursor.execute("""CREATE TABLE if not exists ALLE_DATEN(
     ID INTEGER PRIMARY KEY ASC AUTOINCREMENT,
-    Zeitstempel text UNIQUE,
+    Zeitstempel text UNIQUE
+    Ort text,
     Beleuchtung real,
     Temperatur real)""")
 
@@ -89,8 +94,8 @@ def write_data():
 
     if avgTemperatur != 0.0 and avgBeleuchtung != 0.0:
         cursor.execute(
-            """INSERT INTO Alle_Daten (ID,Zeitstempel,Beleuchtung,Temperatur)VALUES(null,'{0}','{1}','{2}');""".format(
-                timestamp, avgBeleuchtung, avgTemperatur))
+            """INSERT INTO Alle_Daten (ID,Zeitstempel,Ort,Beleuchtung,Temperatur)VALUES(null,'{0}','{1}','{2}', '{3}');""".format(
+                timestamp, location, avgBeleuchtung, avgTemperatur))
 
     ergebnisSQL = cursor.execute("SELECT * from ALLE_DATEN")
     ergebnisSQL
