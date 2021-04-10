@@ -5,6 +5,7 @@ import dash_core_components as dcc
 import sqlite3
 import dash_daq as daq
 import plotly.graph_objects as go
+import pandas as pd
 
 name = __name__.split(".")[1]
 settings = Site.load_settings(name)
@@ -30,37 +31,30 @@ def create_checkbox(id, text, default):
 
 
 def create_content(table=None):
-    global content, data
+    global content, df
 
     connection = sqlite3.connect("E://Programmin//Datenbank.db")
-    cursor = connection.cursor()
 
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-    tables = [table[0] for table in cursor.fetchall()]
+    df = pd.read_sql('SELECT * from ALLE_DATEN', connection)
 
+    connection.close()
 
-    table=["Timestamp", "Beleuchtung", "Temperatur"]
-    data = {"Timestamp": [], "Temperatur": [], "Beleuchtung": []}
-    dbdata = list(cursor.execute("""select * from ALLE_DATEN"""))
-    for result in dbdata:
-        data["Timestamp"].append(result[1])
-        data["Beleuchtung"].append(result[2])
-        data["Temperatur"].append(result[3])
+    df = df.rename(columns={"Zeitstempel": "Timestamp"})
 
     content = [
         html.Div(
             children=[
                 Site.create_card_row(
-                    f"{' '.join(table[1])} / {' '.join(table[2])}",
+                    f"{' '.join(df.columns[1])} / {' '.join(df.columns[2])}",
                     [
-                        Site.create_card("Timestamp", "timestamp-evaluation-card", " ", data["Timestamp"][-1]),
-                        Site.create_card("Beleuchtung", "beleuchtung-evaluation-card", " ", data["Beleuchtung"][-1]),
-                        Site.create_card("Temperatur", "temperatur-evaluation-card", " ", data["Temperatur"][-1]),
+                        Site.create_card("Timestamp", "timestamp-evaluation-card", " ", df["Timestamp"].iloc[-1]),
+                        Site.create_card("Beleuchtung", "beleuchtung-evaluation-card", " ", df["Beleuchtung"].iloc[-1]),
+                        Site.create_card("Temperatur", "temperatur-evaluation-card", " ", df["Temperatur"].iloc[-1]),
                     ]
                 ),
                 html.Br(),
                 html.Div(
-                    children=create_figure(True, True),
+                    children=create_figure("Beleuchtung", "Temperatur"),
                     id="plot-div"
                 ),
             ]
@@ -84,17 +78,21 @@ axis_layout = dict(
 
 
 # function for creating graphs on evaluation page
-def create_figure(beleuchtung, temperatur):
+def create_figure(*args, **kwargs):
     global c
+
+    figure_list = [item for item in args]
+
     c = 0
     fig = go.Figure()
 
     def create_trace(key):
+        
         global c
         fig.add_trace(
             go.Scatter(
-                x=data["Timestamp"],
-                y=data[key],
+                x=df["Timestamp"],
+                y=df[key],
                 name=key,
                 mode="lines+markers",
                 line=dict(color=colors[c])
@@ -102,9 +100,9 @@ def create_figure(beleuchtung, temperatur):
         )
         c += 1
 
-    if beleuchtung:
+    if "Beleuchtung" in figure_list:
         create_trace("Beleuchtung")
-    if temperatur:
+    if "Temperatur" in figure_list:
         create_trace("Temperatur")
 
     fig.update_layout(
