@@ -36,6 +36,9 @@ def create_content(table=None):
     connection = sqlite3.connect("E://Programmin//Datenbank.db")
 
     df = pd.read_sql('SELECT * from ALLE_DATEN', connection)
+
+    connection.close()
+
     df = df.rename(columns={"Zeitstempel": "Timestamp"})
 
     content = [
@@ -51,7 +54,7 @@ def create_content(table=None):
                 ),
                 html.Br(),
                 html.Div(
-                    children=create_figure(True, True),
+                    children=create_figure("Beleuchtung", "Temperatur"),
                     id="plot-div"
                 ),
             ]
@@ -75,8 +78,11 @@ axis_layout = dict(
 
 
 # function for creating graphs on evaluation page
-def create_figure(beleuchtung, temperatur):
+def create_figure(*args, **kwargs):
     global c
+
+    figure_list = [item for item in args]
+
     c = 0
     fig = go.Figure()
 
@@ -94,9 +100,9 @@ def create_figure(beleuchtung, temperatur):
         )
         c += 1
 
-    if beleuchtung:
+    if "Beleuchtung" in figure_list:
         create_trace("Beleuchtung")
-    if temperatur:
+    if "Temperatur" in figure_list:
         create_trace("Temperatur")
 
     fig.update_layout(
