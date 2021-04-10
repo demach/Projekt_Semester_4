@@ -32,7 +32,6 @@ def create_app(name, content):
                     dbc.NavItem(dbc.NavLink('HOME', href=f"{link}/home")),
                     dbc.NavItem(dbc.NavLink('EVALUATION', href=f"{link}/evaluation")),
                     dbc.NavItem(dbc.NavLink('MEASUREMENTS', href=f"{link}/measurements")),
-                    dbc.NavItem(dbc.NavLink('CONTROL', href=f"{link}/control")),
                 ],
                 brand=settings['name'],
                 brand_href=f"{link}/home",
