@@ -40,7 +40,20 @@ def update_page(url):
                 except Exception as e:
                     traceback.print_exc()
                     return [not_found]
-
+                
+             
+        elif url_list[1] == "measurement":
+            if not len(url_list) > 3:
+                try:
+                    if len(url_list) == 2:
+                        measurement = None
+                    else:
+                        measurement = url_list[2]
+                    Sites.MEASUREMENT.create_content(measurement)
+                    return Sites.MEASUREMENT.content
+                except Exception as e:
+                    traceback.print_exc()
+                    return [not_found]
 
 if __name__ == "__main__":
     app.run_server(debug=True, host="0.0.0.0", port=settings["GENERAL"]["ports"]["dash"])
