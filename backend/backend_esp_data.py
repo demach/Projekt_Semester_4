@@ -4,11 +4,6 @@ import time
 from paho.mqtt import client as mqtt_client
 import numpy as np
 
-import sqlite3
-from datetime import datetime
-
-import json
-
 broker = "192.168.178.77"
 port = 1883
 topic = "/home/#"
@@ -22,7 +17,6 @@ MAX = 1000
 array = np.zeros((MAX, INPUTS), np.float16)
 
 count = 0
-location = ""
 
 def connect_mqtt() -> mqtt_client:
     def on_connect(client, userdata, flags, rc):
@@ -52,70 +46,39 @@ def publish(client):
 
 
 def subscribe(client: mqtt_client):
-    global array
-    count = 0
+
+    temperature = 0.0
+    humidity = 0.0
 
     def on_message(client, userdata, msg):
-        global count
+        global temperature, humidity
         #print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
-        if msg.topic == "/home/start_measurement":
-            data = json.loads(msg.payload.decode())
-            location = data[0]
-            MAX = data[1]
-            INPUTS = data[2]
-            array = np.zeros((MAX, INPUTS), np.float16)
-        if msg.topic == "/home/anotherone":
-            array[count] = msg.payload.decode()
-            count += 1
-            if count % 100 == 0:
-                print(count)
-            #print(count, array)
+        if msg.topic == "/home/temperature":
+            temperature = msg.payload.decode()
+        if msg.topic == "/home/dht/humidity":
+            humidity = msg.payload.decode()        
         if msg.topic == "/home/finish":
-            print(count, np.average(1.0104* array))
-            write_data()
-            count = 0
+            
+            print(f"temperature: {round(1.0104 * float(temperature),6)}")
+            print(f"humidity: {round(float(humidity),2)}")
             print("ready for next start")
-            #raise KeyError
+            
         else:
             pass
 
     client.subscribe(topic)
     client.on_message = on_message
 
-def write_data():
-    verbindung = sqlite3.connect("./datenbank.db")
-    cursor = verbindung.cursor()
-
-    cursor.execute("""CREATE TABLE if not exists ALLE_DATEN(
-    ID INTEGER PRIMARY KEY ASC AUTOINCREMENT,
-    Zeitstempel text UNIQUE,
-    Beleuchtung real,
-    Temperatur real)""")
-
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    avgTemperatur = round(np.average(array[:,0]), 2)
-    avgBeleuchtung = round(np.average(array[:,1]), 2)
-
-    if avgTemperatur != 0.0 and avgBeleuchtung != 0.0:
-        cursor.execute(
-            """INSERT INTO Alle_Daten (ID,Zeitstempel,Beleuchtung,Temperatur)VALUES(null,'{0}','{1}','{2}');""".format(
-                timestamp, avgBeleuchtung, avgTemperatur))
-
-    ergebnisSQL = cursor.execute("SELECT * from ALLE_DATEN")
-    ergebnisSQL
-
-    verbindung.commit()
-    cursor.close()
-    verbindung.close()
 
 
 
 def run():
     client = connect_mqtt()
+    #client.loop_start()
+    #publish(client)
+
     subscribe(client)
     client.loop_forever()
-
 
 
 if __name__ == '__main__':

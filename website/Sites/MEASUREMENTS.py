@@ -43,14 +43,13 @@ def create_content(table=None):
     content = [
         html.Div(
             children=[
-                # Site.create_card_row(
-                #     f"{' '.join(df.columns[1])} / {' '.join(df.columns[2])}",
-                #     [
-                #         Site.create_card("Timestamp", "timestamp-evaluation-card", " ", df["Timestamp"].iloc[-1]),
-                #         Site.create_card("Beleuchtung", "beleuchtung-evaluation-card", " ", df["Beleuchtung"].iloc[-1]),
-                #         Site.create_card("Temperatur", "temperatur-evaluation-card", " ", df["Temperatur"].iloc[-1]),
-                #     ]
-                # ),
+                Site.create_card_row(
+                    f"{'MAX '.join(df.columns[1])} / {'MAX '.join(df.columns[2])}",
+                    [
+                        Site.create_card("Beleuchtung", "beleuchtung-evaluation-card", " ", df["Beleuchtung"].max()),
+                        Site.create_card("Temperatur", "temperatur-evaluation-card", " ", df["Temperatur"].max()),
+                    ]
+                ),
                 html.Br(),
                 html.Div(
                     dash_table.DataTable(data=df.to_dict('records'), columns=[{"name": i, "id": i} for i in df.columns]),
