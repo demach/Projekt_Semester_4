@@ -7,14 +7,19 @@
 
 #define DHTPIN 4
 #define DHTTYPE DHT11
+//#define DHTTYPE DHT22
 
 #define MQTT_PUB_TEMP "esp32/dht/temperature"
 #define MQTT_PUB_HUM  "esp32/dht/humidity"
 
+#define ADSValue 0.03125
+
 DHT dht(DHTPIN, DHTTYPE);
 
-float temp =0.0;
-float hum=0.0;
+float temperatur_accumulated = 0.0;
+
+float temperature_dht=0.0;
+float humidity_dht=0.0;
 
 unsigned long previousMillis = 0;
 const long interval = 10000;
@@ -26,9 +31,6 @@ const char* MQTT_BROKER = "192.168.178.77";
 Adafruit_ADS1115 ads;
 float Voltage = 0.0;
 float Temperature = 0.0;
-float Reading = 0.0;
-float tempmap = 0.0;
-float anotherone = 0.0;
 
 
 WiFiClient espClient;
@@ -50,9 +52,15 @@ void setup() {
   Serial.begin(115200);
   setup_wifi();
   client.setServer(MQTT_BROKER, 1883);
+  client.setKeepAlive(60);
 
   ads.begin(0x48);
-  ads.setGain(GAIN_TWOTHIRDS);
+  // ads.setGain(GAIN_TWOTHIRDS);     // 2/3x gain +/- 6.144V  1 bit = 3mV      0.1875mV (default)     last value has to be set in ADSValue 
+  // ads.setGain(GAIN_ONE);        // 1x gain   +/- 4.096V  1 bit = 2mV      0.125mV
+  // ads.setGain(GAIN_TWO);        // 2x gain   +/- 2.048V  1 bit = 1mV      0.0625mV
+  ads.setGain(GAIN_FOUR);       // 4x gain   +/- 1.024V  1 bit = 0.5mV    0.03125mV
+  // ads.setGain(GAIN_EIGHT);      // 8x gain   +/- 0.512V  1 bit = 0.25mV   0.015625mV
+  // ads.setGain(GAIN_SIXTEEN);    // 16x gain  +/- 0.256V  1 bit = 0.125mV  0.0078125mV
 
   dht.begin();
   
@@ -118,25 +126,34 @@ void callback(char* topic, byte* message, unsigned int length){
 
 void measurement(int repetitions){
   int16_t adc0;
+  temperatur_accumulated = 0.0;
   for(int i=0; i<repetitions; i++){
+
+    //read analog signal and multiply received value with adc resolution
+
     adc0 = ads.readADC_SingleEnded(0);
-    Voltage = (adc0 * 0.1875) / 1000;
-    //Temperature = (adc0 * 0.1875) * 0.0806;
-    //Reading = (adc0 * 0.1875);
-    anotherone = (Voltage * 100);
-    //tempmap = map(Reading, 0, 307, 0, 150);
-    /*String Str_temp = String(tempmap,4);
-    String Str_voltage = String(Voltage, 4);
-    String Str_value = String(Reading, 4);
-    String Str_temperature = String(Temperature, 4);*/
-    String Str_anotherone = String(anotherone, 4);
-    /*client.publish("/home/voltage", Str_voltage.c_str());
-    client.publish("/home/value", Str_value.c_str());
-    client.publish("/home/temperature", Str_temperature.c_str());
-    client.publish("/home/temp", Str_temp.c_str());*/
-    client.publish("/home/anotherone", Str_anotherone.c_str());
-    delay(25);
+    Voltage = (adc0 * ADSValue) / 1000;
+    
+    // add values up for later averaging temperature
+    temperatur_accumulated += Voltage * 100;
+    
+
+    delay(10);
   }
+  
+  humidity_dht = dht.readHumidity();
+  temperature_dht = dht.readTemperature();
+
+
+  Temperature = temperatur_accumulated/repetitions;
+
+  if (!client.connected()) {
+    reconnect();
+  }
+  //publish data from sensors to different mqtt topics 
+  client.publish("/home/temperature", String(Temperature).c_str());
+  client.publish("/home/dht/humidity", String(humidity_dht).c_str());
+  client.publish("/home/dht/temperature", String(temperature_dht).c_str());
   client.publish("/home/finish", "Finished with this measurement");
 }
 
@@ -158,48 +175,11 @@ void reconnect() {
   }
 }
 void loop() {
-
+  
+  //detect if mqtt client is still connected
   if (!client.connected()) {
     reconnect();
   }
+  //let client run forever
   client.loop();
-/*
-  unsigned long currentMillis = millis();
-
-  if (currentMillis - previousMillis >= interval){
-    previousMillis = currentMillis;
-
-    /hum = dht.readHumidity();
-    temp= dht.readTemperature();
-
-    if(isnan(temp) || isnan(hum)){
-      Serial.println(F("Failed to read from DHT sensor!"));
-      return;
-    }
-
-    // Publish an MQTT message on topic esp32/dht/temperature
-    //uint16_t packetIdPub1 = client.publish(MQTT_PUB_TEMP, 1, true, String(temp).c_str());    
-    client.publish(MQTT_PUB_TEMP, String(temp).c_str());                        
-    //Serial.printf("Publishing on topic %s at QoS 1, packetId: %i", MQTT_PUB_TEMP, packetIdPub1);
-    Serial.printf("Message: %.2f temp\n", temp);
-
-    // Publish an MQTT message on topic esp32/dht/humidity
-    client.publish(MQTT_PUB_HUM, String(hum).c_str()); 
-    //uint16_t packetIdPub2 = client.publish(MQTT_PUB_HUM, 1, true, String(hum).c_str());                            
-    //Serial.printf("Publishing on topic %s at QoS 1, packetId %i: ", MQTT_PUB_HUM, packetIdPub2);
-    Serial.printf("Message: %.2f hum\n", hum);
-    
-  }
-*/
-  
-  /*adc0 = ads.readADC_SingleEnded(0);
-  Voltage = (adc0 * 0.0625) / 1000;
-  Temperature = (adc0 * 0.0625) * 0.0806;
-  String Str_voltage = String(Voltage, 4);
-  String Str_temperature = String(Temperature, 4);*/
-  /*snprintf (msg, 50, "Alive since %ld milliseconds", millis());
-  Serial.print("Publish message: ");
-  Serial.println(msg);
-  client.publish("/home/finish", "Finished with this measurement");*/
-  //delay(5000);
 }
