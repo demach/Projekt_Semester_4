@@ -24,9 +24,9 @@ float humidity_dht=0.0;
 unsigned long previousMillis = 0;
 const long interval = 10000;
 
-const char* SSID = "hm.dslmobil.FRITZ!Box 7590 VJ";
-const char* PSK = "30036950525569455340";
-const char* MQTT_BROKER = "192.168.178.77";
+const char* SSID = "your ssid";
+const char* PSK = "your psk";
+const char* MQTT_BROKER = "your broker";
 
 Adafruit_ADS1115 ads;
 float Voltage = 0.0;

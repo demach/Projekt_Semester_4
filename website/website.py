@@ -111,5 +111,6 @@ def callback07(value_red, value_green, value_blue):
 
 app.config['suppress_callback_exceptions'] = True
 
+
 if __name__ == "__main__":
     app.run_server(debug=True, host="0.0.0.0", port=settings["GENERAL"]["ports"]["dash"])
