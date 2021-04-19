@@ -33,9 +33,9 @@ def create_checkbox(id, text, default):
 def create_content(table=None):
     global content, df
 
-    connection = sqlite3.connect("E://Programmin//Datenbank.db")
-
-    df = pd.read_sql('SELECT * from ALLE_DATEN', connection)
+    connection = sqlite3.connect(settings["db_path"])
+    #print(settings["db_path"])
+    df = pd.read_sql('SELECT * from alle_daten', connection)
 
     connection.close()
 
@@ -54,9 +54,38 @@ def create_content(table=None):
                 ),
                 html.Br(),
                 html.Div(
-                    children=create_figure("Beleuchtung", "Temperatur"),
+                    children=create_figure(True, True),
                     id="plot-div"
                 ),
+                dbc.Col(
+                    html.Div(
+                        children = [
+                            create_checkbox("beleuchtung-checkbox", "Beleuchtung", True)
+                        ]
+                    ),
+                    width = "auto"
+                ),
+                dbc.Col(
+                    html.Div(
+                        children = [
+                            create_checkbox("temperatur-checkbox", "Temperatur", True)
+                        ]
+                    ),
+                    width = "auto"
+                ),
+                dbc.Col(
+                    html.Div(
+                        children = [
+                            dbc.Button(
+                                "SHOW ALL", 
+                                color="secondary", 
+                                className="mr-1",
+                                id = "show-all-button"
+                            )
+                        ]
+                    ),
+                    width = "auto"
+                )
             ]
         )
     ]
@@ -81,7 +110,7 @@ axis_layout = dict(
 def create_figure(*args, **kwargs):
     global c
 
-    figure_list = [item for item in args]
+    figure_list = args
 
     c = 0
     fig = go.Figure()
@@ -100,9 +129,9 @@ def create_figure(*args, **kwargs):
         )
         c += 1
 
-    if "Beleuchtung" in figure_list:
+    if figure_list[0]:
         create_trace("Beleuchtung")
-    if "Temperatur" in figure_list:
+    if figure_list[1]:
         create_trace("Temperatur")
 
     fig.update_layout(
@@ -122,3 +151,4 @@ def create_figure(*args, **kwargs):
     )
 
     return [dcc.Graph(figure=fig)]
+
