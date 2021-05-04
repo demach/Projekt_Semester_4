@@ -1,0 +1,6 @@
+.Python
+[Bb]in
+[Vv]env
+website/__pycache__
+website/Sites/__pycache__
+pip-selfcheck.json
