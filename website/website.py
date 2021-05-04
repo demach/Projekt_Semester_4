@@ -149,8 +149,6 @@ def buttonred(red_click, green_click, blue_click):
     #print(payload)
     return ["You have clicked the red button"]
 
-
-
 @app.callback(
     Output('ortsauswahl_output', 'children'),
     Input('Ortsauswahl', 'value')
@@ -190,6 +188,16 @@ def updateOrte(n_clicks,input1):
 
 app.config['suppress_callback_exceptions'] = True
 
+
+
+@app.callback(
+    Output('ortsauswahl_output', 'children'),
+    Input('ortsauswahl', 'value')
+)
+def drop_update(value):
+    return f"You have selected {value}"
+
+app.config['suppress_callback_exceptions'] = True
 
 if __name__ == "__main__":
     app.run_server(debug=True, host="0.0.0.0", port=settings["GENERAL"]["ports"]["dash"])
