@@ -109,8 +109,51 @@ def callback07(value_red, value_green, value_blue):
     backend_website.publish(client, json.dumps(payload), "projekt4/rgb_value")
     return [f"You have selected {value_red} for red, {value_green} for green and {value_blue} for blue."] 
 
-app.config['suppress_callback_exceptions'] = True
+red=0
+green=0
+blue=0
 
+
+@app.callback(
+    Output("button_output","children"),
+    [Input("button_red", "n_clicks"),
+    Input("button_green", "n_clicks"),
+    Input("button_blue", "n_clicks")]
+    )
+def buttonred(red_click, green_click, blue_click):
+    global red,green,blue
+
+    if not client.is_connected:
+        client.connect(mqtt_broker, mqtt_port)
+    payload={}
+    if isinstance(red_click,int): 
+        if red_click>red:
+            red +=1
+            payload={"red":255, "green":0, "blue":0}
+            backend_website.publish(client, json.dumps(payload), "projekt4/rgb_value")
+    if isinstance(green_click, int):    
+        if int(green_click)>green:
+            green+=1
+            payload={"red":0, "green":255, "blue":0}
+            backend_website.publish(client, json.dumps(payload), "projekt4/rgb_value")
+    if isinstance(blue_click, int):
+        if int(blue_click)>blue:
+            blue+=1
+            payload={"red":0, "green": 0, "blue":255}
+            backend_website.publish(client, json.dumps(payload), "projekt4/rgb_value")
+    #print(payload)
+    return ["You have clicked the red button"]
+
+
+
+@app.callback(
+    Output('ortsauswahl_output', 'children'),
+    Input('ortsauswahl', 'value')
+)
+def drop_update(value):
+    return f"You have selected {value}"
+
+app.config['suppress_callback_exceptions'] = True
 
 if __name__ == "__main__":
     app.run_server(debug=True, host="0.0.0.0", port=settings["GENERAL"]["ports"]["dash"])
