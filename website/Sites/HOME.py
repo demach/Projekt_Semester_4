@@ -6,6 +6,18 @@ from dash.dependencies import Input, Output
 name = __name__.split('.')[1]
 settings = Site.load_settings(name)
 
+<<<<<<< Updated upstream
+=======
+connection = sql.connect(settings["db_path"])
+    #print(settings["db_path"])
+df = pd.read_sql('SELECT * from Orte', connection)
+
+connection.close()
+
+items = [{"label":i, "value":i} for i in df["Ortsbezeichnung"].unique()]
+
+
+>>>>>>> Stashed changes
 content = [
     html.Div(
         children=[
@@ -82,13 +94,43 @@ content = [
                             ),
                         ],
                         justify='center',
-                        align='center'
-                    )
+
+                        align='center',
+                        
+                        
+                    ),
+                    html.Br(),
+                    html.Div([
+                        dbc.Card(
+                            [
+                                dbc.FormGroup(
+                                    [
+                                    
+                                        dcc.Dropdown(
+                                            id="Ortsauswahl",
+                                            options = [{"label":i, "value":i} for i in df["Ortsbezeichnung"].unique()],
+                                            placeholder = "Ort auswählen"
+                                        ),
+                                        
+                                        html.Div(id="ortsauswahl_output"),
+
+                                        html.Br(),
+                                        dbc.Input(id="Ortsinput", placeholder="Ort hinzufügen", type="text"),
+                                        dbc.Button("Submit", id="OrtSub", color='primary', className="mr-1")
+                                    ],
+                                ),
+                            ],
+                            body=True,
+                        ),
+                        
+                    ],
+                    ),
+
                 ]
             )
         ],
         style={
-            'font-size': 50,
+            'font-size': 20,
             'display': 'flex',
             'justify-content': 'center',
             'align-items': 'center',

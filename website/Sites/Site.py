@@ -20,31 +20,38 @@ def load_settings(name):
 
 def create_app(name, content):
     settings = load_settings(name)
-    app = dash.Dash(name, external_stylesheets=[dbc.themes.LUX])
+    app = dash.Dash(name, external_stylesheets=[dbc.themes.BOOTSTRAP])
     link = f"http://{settings['ip']}:{settings['ports']['dash']}"
     app.title = settings['name']
-    app.layout = html.Div(
-        id="main-div",
-        children=[
-            dcc.Location(id='url', refresh=False),
-            dbc.NavbarSimple(
-                children=[
-                    dbc.NavItem(dbc.NavLink('HOME', href=f"{link}/home")),
-                    dbc.NavItem(dbc.NavLink('EVALUATION', href=f"{link}/evaluation")),
-                    dbc.NavItem(dbc.NavLink('MEASUREMENT', href=f"{link}/measurement")),
-                    dbc.NavItem(dbc.NavLink('CONTROL', href=f"{link}/control")),
+    app.layout = dbc.Container(
+        [
 
-                ],
-                brand=settings['name'],
-                brand_href=f"{link}/home",
-                color='primary',
-                dark=True
-            ),
+       
             html.Div(
-                id='content-div',
-                children=content
-            ),
-            html.Div(id="test", style={'display': 'none'})
+            id="main-div",
+            children=[
+                dcc.Location(id='url', refresh=False),
+                dbc.NavbarSimple(
+                    children=[
+                        dbc.NavItem(dbc.NavLink('HOME', href=f"{link}/home")),
+                        dbc.NavItem(dbc.NavLink('EVALUATION', href=f"{link}/evaluation")),
+                        dbc.NavItem(dbc.NavLink('MEASUREMENT', href=f"{link}/measurement")),
+                        dbc.NavItem(dbc.NavLink('CONTROL', href=f"{link}/control")),
+
+                    ],
+                    brand=settings['name'],
+                    brand_href=f"{link}/home",
+                    color='primary',
+                    dark=True
+                ),
+                html.Div(
+                    id='content-div',
+                    children=content,
+                    
+                ),
+                html.Div(id="test", style={'display': 'none'})
+            ]
+            )
         ]
     )
     return app

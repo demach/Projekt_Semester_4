@@ -2,11 +2,15 @@ import Sites
 import flask
 import json
 import dash_core_components as dcc
+import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 import dash_html_components as html
 import traceback
 import backend_website
+import pandas as pd
+import sqlite3 as sql
+
 # load settings from file
 with open('settings.json', 'r') as rd:
     settings = json.loads(rd.read())
@@ -108,6 +112,81 @@ def callback07(value_red, value_green, value_blue):
     payload ={"red": value_red, "green": value_green, "blue": value_blue}
     backend_website.publish(client, json.dumps(payload), "projekt4/rgb_value")
     return [f"You have selected {value_red} for red, {value_green} for green and {value_blue} for blue."] 
+
+
+red=0
+green=0
+blue=0
+
+
+@app.callback(
+    Output("button_output","children"),
+    [Input("button_red", "n_clicks"),
+    Input("button_green", "n_clicks"),
+    Input("button_blue", "n_clicks")]
+    )
+def buttonred(red_click, green_click, blue_click):
+    global red,green,blue
+
+    if not client.is_connected:
+        client.connect(mqtt_broker, mqtt_port)
+    payload={}
+    if isinstance(red_click,int): 
+        if red_click>red:
+            red +=1
+            payload={"red":255, "green":0, "blue":0}
+            backend_website.publish(client, json.dumps(payload), "projekt4/rgb_value")
+    if isinstance(green_click, int):    
+        if int(green_click)>green:
+            green+=1
+            payload={"red":0, "green":255, "blue":0}
+            backend_website.publish(client, json.dumps(payload), "projekt4/rgb_value")
+    if isinstance(blue_click, int):
+        if int(blue_click)>blue:
+            blue+=1
+            payload={"red":0, "green": 0, "blue":255}
+            backend_website.publish(client, json.dumps(payload), "projekt4/rgb_value")
+    #print(payload)
+    return ["You have clicked the red button"]
+
+
+
+@app.callback(
+    Output('ortsauswahl_output', 'children'),
+    Input('Ortsauswahl', 'value')
+)
+def drop_update(value):
+    if value != None:
+        return f"You have selected {value}"
+    else:
+        return "Please select a location"
+
+@app.callback(
+    Output("Ortsauswahl", "options"),
+    Input("OrtSub", "n_clicks"),
+    State("Ortsinput", "value")
+)
+def updateOrte(n_clicks,input1):
+    print(input1)
+    if input1 != None:
+        conn = sql.connect(settings["GENERAL"]["db_path"])
+        #print(settings["db_path"])
+        cursor = conn.cursor()
+        try:
+            cursor.execute("Insert into Orte values (null,?)", [f"{input1}"])
+            conn.commit()
+        except:
+            pass
+        df = pd.read_sql('SELECT * from Orte', conn)
+        print(df)
+        conn.close()
+
+        
+
+        return [{"label":i, "value":i} for i in df["Ortsbezeichnung"].unique()]
+    else:
+        return [{"label":i, "value":i} for i in Sites.HOME.df["Ortsbezeichnung"].unique()]
+
 
 app.config['suppress_callback_exceptions'] = True
 
