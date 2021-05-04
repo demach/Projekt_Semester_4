@@ -9,13 +9,17 @@ import sqlite3 as sql
 name = __name__.split('.')[1]
 settings = Site.load_settings(name)
 
+
 connection = sql.connect(settings["db_path"])
     #print(settings["db_path"])
 df = pd.read_sql('SELECT * from Orte', connection)
 
 connection.close()
 
+items = [{"label":i, "value":i} for i in df["Ortsbezeichnung"].unique()]
+
 items = df["Ortsbezeichnung"].unique()
+
 
 
 content = [
@@ -100,6 +104,30 @@ content = [
                     ),
                     html.Br(),
                     html.Div([
+                        dbc.Card(
+                            [
+                                dbc.FormGroup(
+                                    [
+                                    
+                                        dcc.Dropdown(
+                                            id="Ortsauswahl",
+                                            options = [{"label":i, "value":i} for i in df["Ortsbezeichnung"].unique()],
+                                            placeholder = "Ort auswählen"
+                                        ),
+                                        
+                                        html.Div(id="ortsauswahl_output"),
+
+                                        html.Br(),
+                                        dbc.Input(id="Ortsinput", placeholder="Ort hinzufügen", type="text"),
+                                        dbc.Button("Submit", id="OrtSub", color='primary', className="mr-1")
+                                    ],
+                                ),
+                            ],
+                            body=True,
+                        ),
+                        
+                    ],
+                    ),
                         dbc.DropDownMenu(
                             label="Ortsauswahl",
                             bs_size="mb-3",
@@ -114,7 +142,7 @@ content = [
             )
         ],
         style={
-            'font-size': 50,
+            'font-size': 20,
             'display': 'flex',
             'justify-content': 'center',
             'align-items': 'center',
