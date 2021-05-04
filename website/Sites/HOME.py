@@ -1,14 +1,13 @@
 from . import Site
 import dash_html_components as html
 import dash_bootstrap_components as dbc
-import dash_core_components as dcc
+import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 import pandas as pd
 import sqlite3 as sql
 
 name = __name__.split('.')[1]
 settings = Site.load_settings(name)
-
 
 connection = sql.connect(settings["db_path"])
     #print(settings["db_path"])
@@ -17,9 +16,6 @@ df = pd.read_sql('SELECT * from Orte', connection)
 connection.close()
 
 items = [{"label":i, "value":i} for i in df["Ortsbezeichnung"].unique()]
-
-items = df["Ortsbezeichnung"].unique()
-
 
 
 content = [
@@ -126,16 +122,6 @@ content = [
                             body=True,
                         ),
                         
-                    ],
-                    ),
-                        dbc.DropDownMenu(
-                            label="Ortsauswahl",
-                            bs_size="mb-3",
-                            children=items,
-                            className="mb-3"
-                        ),
-                        
-                        html.Div(id="ortsauswahl_output")
                     ],
                     ),
                 ]
