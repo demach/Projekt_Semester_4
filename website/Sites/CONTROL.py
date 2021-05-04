@@ -18,6 +18,20 @@ def create_slider(id, text, default, minimum, maximum, steps):
             value=default,
             )
 
+def create_button(id, text):
+    return html.Div(
+            dbc.Button(
+                children=text,
+                id=id,
+                color='primary',
+                size='lg',
+                className='mr-1',
+            ),
+            style={"width":"400px"}
+        )   
+
+
+
 def create_content(table=None):
     global content
 
@@ -75,6 +89,21 @@ def create_content(table=None):
                 ),
                 dbc.Col(
                     html.Div(id='slider_output'),
+                ),
+                html.Br(),
+                html.Br(),
+                dbc.Col(
+                        children=[
+                            Site.create_card_row(
+                                f"Hello",
+                                [
+                                    create_button("button_blue", "Blau"),
+                                    create_button("button_red", "Rot"),
+                                    create_button("button_green", "Gruen"),
+                                    html.Div(id="button_output"), 
+                                ]
+                                )
+                        ]
                 ),
             ]
         ),
