@@ -1,10 +1,22 @@
 from . import Site
 import dash_html_components as html
 import dash_bootstrap_components as dbc
+import dash_core_components as dcc
 from dash.dependencies import Input, Output
+import pandas as pd
+import sqlite3 as sql
 
 name = __name__.split('.')[1]
 settings = Site.load_settings(name)
+
+connection = sql.connect(settings["db_path"])
+    #print(settings["db_path"])
+df = pd.read_sql('SELECT * from Orte', connection)
+
+connection.close()
+
+items = [{"label":i, "value":i} for i in df["Ortsbezeichnung"].unique()]
+
 
 content = [
     html.Div(
@@ -82,13 +94,41 @@ content = [
                             ),
                         ],
                         justify='center',
-                        align='center'
-                    )
+                        align='center',
+                        
+                        
+                    ),
+                    html.Br(),
+                    html.Div([
+                        dbc.Card(
+                            [
+                                dbc.FormGroup(
+                                    [
+                                    
+                                        dcc.Dropdown(
+                                            id="Ortsauswahl",
+                                            options = [{"label":i, "value":i} for i in df["Ortsbezeichnung"].unique()],
+                                            placeholder = "Ort auswählen"
+                                        ),
+                                        
+                                        html.Div(id="ortsauswahl_output"),
+
+                                        html.Br(),
+                                        dbc.Input(id="Ortsinput", placeholder="Ort hinzufügen", type="text"),
+                                        dbc.Button("Submit", id="OrtSub", color='primary', className="mr-1")
+                                    ],
+                                ),
+                            ],
+                            body=True,
+                        ),
+                        
+                    ],
+                    ),
                 ]
             )
         ],
         style={
-            'font-size': 50,
+            'font-size': 20,
             'display': 'flex',
             'justify-content': 'center',
             'align-items': 'center',
