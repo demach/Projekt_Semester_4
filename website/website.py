@@ -7,7 +7,7 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 import dash_html_components as html
 import traceback
-import backend_website
+#import backend_website
 import pandas as pd
 import sqlite3 as sql
 
@@ -15,14 +15,14 @@ import sqlite3 as sql
 with open('settings.json', 'r') as rd:
     settings = json.loads(rd.read())
 
-mqtt_broker = settings['GENERAL']['mqtt_broker']
-mqtt_port = settings['GENERAL']['ports']['mqtt']
-print(mqtt_broker, mqtt_port)
+#mqtt_broker = settings['GENERAL']['mqtt_broker']
+#mqtt_port = settings['GENERAL']['ports']['mqtt']
+# print(mqtt_broker, mqtt_port)
 
 # creating empty site with header
 app = Sites.Site.create_app(settings['GENERAL']['name'], [None])
 
-client = backend_website.connect_mqtt(mqtt_broker, mqtt_port)
+#client = backend_website.connect_mqtt(mqtt_broker, mqtt_port)
 
 @app.callback(
     [Output("content-div", "children")],
@@ -107,10 +107,10 @@ def callback06(n_clicks):
     Input('slider_blue', 'value')]
 )
 def callback07(value_red, value_green, value_blue):
-    if not client.is_connected:
-        client.connect(mqtt_broker, mqtt_port)
+    #if not client.is_connected:
+    #    client.connect(mqtt_broker, mqtt_port)
     payload ={"red": value_red, "green": value_green, "blue": value_blue}
-    backend_website.publish(client, json.dumps(payload), "projekt4/rgb_value")
+    #backend_website.publish(client, json.dumps(payload), "projekt4/rgb_value")
     return [f"You have selected {value_red} for red, {value_green} for green and {value_blue} for blue."] 
 
 
@@ -135,17 +135,17 @@ def buttonred(red_click, green_click, blue_click):
         if red_click>red:
             red +=1
             payload={"red":255, "green":0, "blue":0}
-            backend_website.publish(client, json.dumps(payload), "projekt4/rgb_value")
+            # backend_website.publish(client, json.dumps(payload), "projekt4/rgb_value")
     if isinstance(green_click, int):    
         if int(green_click)>green:
             green+=1
             payload={"red":0, "green":255, "blue":0}
-            backend_website.publish(client, json.dumps(payload), "projekt4/rgb_value")
+            # backend_website.publish(client, json.dumps(payload), "projekt4/rgb_value")
     if isinstance(blue_click, int):
         if int(blue_click)>blue:
             blue+=1
             payload={"red":0, "green": 0, "blue":255}
-            backend_website.publish(client, json.dumps(payload), "projekt4/rgb_value")
+            # backend_website.publish(client, json.dumps(payload), "projekt4/rgb_value")
     #print(payload)
     return ["You have clicked the red button"]
 
@@ -165,7 +165,6 @@ def drop_update(value):
     State("Ortsinput", "value")
 )
 def updateOrte(n_clicks,input1):
-    print(input1)
     if input1 != None:
         conn = sql.connect(settings["GENERAL"]["db_path"])
         #print(settings["db_path"])
@@ -188,16 +187,6 @@ def updateOrte(n_clicks,input1):
 
 app.config['suppress_callback_exceptions'] = True
 
-
-
-@app.callback(
-    Output('ortsauswahl_output', 'children'),
-    Input('ortsauswahl', 'value')
-)
-def drop_update(value):
-    return f"You have selected {value}"
-
-app.config['suppress_callback_exceptions'] = True
 
 if __name__ == "__main__":
     app.run_server(debug=True, host="0.0.0.0", port=settings["GENERAL"]["ports"]["dash"])

@@ -52,9 +52,21 @@ def publish(client, message, topic=start_topic):
         print(f"Failed to send message to topic {topic}")
 
 
+def on_message(client, userdata, msg):
+    topic=msg.topic
+    m_decode=str(msg.payload.decode('utf-8', 'ignore'))
+    print("data Received type", type(m_decode))
+    print("data Received", m_decode)
+    print("converting from json to object")
+    m_in=json.loads(m_decode)
+    print(type(m_in))
+    print("m_in = = ", m_in)
+
 
 def run():
+
     client = connect_mqtt()
+    client.on_message = on_message
     client.loop_start()
     publish(client)
 
