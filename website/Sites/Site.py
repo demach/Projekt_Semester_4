@@ -59,8 +59,8 @@ def create_app(name, content):
 
 # this function creates a card for showing a value
 def create_card(header, id, unit, default=None):
-    card_font_big = 75
-    card_font_small = 25
+    card_font_big = 50
+    card_font_small = 20
 
     if not default:
         default = '0'

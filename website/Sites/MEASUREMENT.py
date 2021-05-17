@@ -36,17 +36,34 @@ def create_content(table=None):
 
     connection = sqlite3.connect(settings["db_path"])
 
-    df = pd.read_sql('SELECT * from alle_daten', connection)
-    df = df.rename(columns={"Zeitstempel": "Timestamp"})
+    df = pd.read_sql('SELECT * from Messwerttabelle', connection)
+    df_orte = pd.read_sql('SELECT * from Orte', connection)
+    df_sensoren = pd.read_sql('SELECT * from Sensoren', connection)
+    
+    orte_dict = df_orte.to_dict()
+    sensoren_dict = df_sensoren.to_dict()
+    sensoren = [i for i in sensoren_dict["Sensorname"].values()]
+    sensoren_id = [i for i in sensoren_dict["Sensoren_ID"].values()]
+
+    orte = [i for i in orte_dict["Ortsbezeichnung"].values()]
+    orte_id = [i for i in orte_dict["Ort_ID"].values()]
+
+
+    orte_dict = dict(zip(orte_id,orte))
+    sensoren_dict = dict(zip(sensoren_id, sensoren))
+    
+
+    df.replace({"Sensor_ID": sensoren_dict}, inplace=True)
+    df.replace({"Ort_ID": orte_dict}, inplace=True)
 
     content = [
         html.Div(
             children=[
                 Site.create_card_row(
-                    f"Min./Max. \n {' '.join(df.columns[1])}/{' '.join(df.columns[2])}",
+                    f"Min./Max. \n {' '.join(df.columns[1])}/{' '.join(df.columns[2])}/{' '.join(df.columns[3])}",
                     [
-                        Site.create_card("Beleuchtung", "beleuchtung-evaluation-card", " ", f"{df['Beleuchtung'].min()}nm / {df['Beleuchtung'].max()}nm"),
-                        Site.create_card("Temperatur", "temperatur-evaluation-card", " ", f"{df['Temperatur'].min()}°C / {df['Temperatur'].max()}°C"),
+                        Site.create_card("letzter Sensor", "sensor-evaluation-card", " ", f"{df['Sensor_ID'].iloc[-1]}"),
+                        Site.create_card("letzter Ort", "ort-evaluation-card", " ", f"{df['Ort_ID'].iloc[-1]}"),
                     ]
                 ),
                 html.Br(),
@@ -82,15 +99,6 @@ def create_table(data):
                 'backgroundColor': 'tomato',
                 'color': 'white'
             },
-            {
-                'if': {
-                    'filter_query': f'{{Temperatur}} = {data["Temperatur"].max()}',
-                    'column_id': 'Temperatur'
-                },
-                'backgroundColor': '#FF00FF',
-                'color': 'white'
-            },
-
             {
                 'if': {
                     'filter_query': '{CO2_Gehalt} > 2000',

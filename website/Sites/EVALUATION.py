@@ -34,65 +34,50 @@ def create_content(table=None):
     global content, df
 
     connection = sqlite3.connect(settings["db_path"])
-    #print(settings["db_path"])
-    df = pd.read_sql('SELECT * from alle_daten', connection)
 
-    connection.close()
+    df = pd.read_sql('SELECT * from Messwerttabelle', connection)
+    df_orte = pd.read_sql('SELECT * from Orte', connection)
+    df_sensoren = pd.read_sql('SELECT * from Sensoren', connection)
+    
+    orte_dict = df_orte.to_dict()
+    sensoren_dict = df_sensoren.to_dict()
+    sensoren = [i for i in sensoren_dict["Sensorname"].values()]
+    sensoren_id = [i for i in sensoren_dict["Sensoren_ID"].values()]
 
-    df = df.rename(columns={"Zeitstempel": "Timestamp"})
+    orte = [i for i in orte_dict["Ortsbezeichnung"].values()]
+    orte_id = [i for i in orte_dict["Ort_ID"].values()]
+
+
+    orte_dict = dict(zip(orte_id,orte))
+    sensoren_dict = dict(zip(sensoren_id, sensoren))
+    
+
+    df.replace({"Sensor_ID": sensoren_dict}, inplace=True)
+    df.replace({"Ort_ID": orte_dict}, inplace=True)
+
+    df = df.rename(columns={"Sensor_ID": "Sensor"})
+    df = df.rename(columns={"Ort_ID": "Ort"})
+
+    letzter_ort = df["Ort"].iloc[-1]
+    print(letzter_ort)
 
     content = [
         html.Div(
             children=[
-                Site.create_card_row(
-                    f"{' '.join(df.columns[1])} / {' '.join(df.columns[2])}",
-                    [
-                        Site.create_card("Timestamp", "timestamp-evaluation-card", " ", df["Timestamp"].iloc[-1]),
-                        Site.create_card("Beleuchtung", "beleuchtung-evaluation-card", " ", df["Beleuchtung"].iloc[-1]),
-                        Site.create_card("Temperatur", "temperatur-evaluation-card", " ", df["Temperatur"].iloc[-1]),
-                    ]
-                ),
                 html.Br(),
-                html.Div(
-                    children=create_figure(True, True),
-                    id="plot-div"
+                dbc.Tabs(
+                    generate_tabs(),           
+                    id="tabs",
+                    active_tab=letzter_ort,
                 ),
-                dbc.Col(
-                    html.Div(
-                        children = [
-                            create_checkbox("beleuchtung-checkbox", "Beleuchtung", True)
-                        ]
-                    ),
-                    width = "auto"
-                ),
-                dbc.Col(
-                    html.Div(
-                        children = [
-                            create_checkbox("temperatur-checkbox", "Temperatur", True)
-                        ]
-                    ),
-                    width = "auto"
-                ),
-                dbc.Col(
-                    html.Div(
-                        children = [
-                            dbc.Button(
-                                "SHOW ALL", 
-                                color="secondary", 
-                                className="mr-1",
-                                id = "show-all-button"
-                            )
-                        ]
-                    ),
-                    width = "auto"
-                )
+                html.Div(id="tab-content", className="p-4"),
             ]
         )
     ]
 
 
 # colors for traces in plots
-colors = ["rgb(0,0,0)", "rgb(100,25500,100)", "rgb(175,175,175)"]
+colors = ["rgb(0,0,0)", "rgb(0,255,100)", "rgb(255,0,10)"]
 
 # standard axis layout for graphs
 axis_layout = dict(
@@ -105,34 +90,72 @@ axis_layout = dict(
     mirror=True
 )
 
+def generate_tabs():
+    tabs = []
+    for i in df["Ort"].unique():
+        tabs.append(dbc.Tab(label=i, tab_id=i))
+    return tabs
 
 # function for creating graphs on evaluation page
 def create_figure(*args, **kwargs):
     global c
+
+    connection = sqlite3.connect(settings["db_path"])
+
+    df = pd.read_sql('SELECT * from Messwerttabelle', connection)
+    df_orte = pd.read_sql('SELECT * from Orte', connection)
+    df_sensoren = pd.read_sql('SELECT * from Sensoren', connection)
+    
+    orte_dict = df_orte.to_dict()
+    sensoren_dict = df_sensoren.to_dict()
+    sensoren = [i for i in sensoren_dict["Sensorname"].values()]
+    sensoren_id = [i for i in sensoren_dict["Sensoren_ID"].values()]
+
+    orte = [i for i in orte_dict["Ortsbezeichnung"].values()]
+    orte_id = [i for i in orte_dict["Ort_ID"].values()]
+
+
+    orte_dict = dict(zip(orte_id,orte))
+    sensoren_dict = dict(zip(sensoren_id, sensoren))
+    
+
+    df.replace({"Sensor_ID": sensoren_dict}, inplace=True)
+    df.replace({"Ort_ID": orte_dict}, inplace=True)
+
+    df = df.rename(columns={"Sensor_ID": "Sensor"})
+    df = df.rename(columns={"Ort_ID": "Ort"})
+
+    letzter_ort = df["Ort"].iloc[-1]
+
 
     figure_list = args
 
     c = 0
     fig = go.Figure()
 
-    def create_trace(key):
-        
+    def create_trace(keys):
+        # data_y = []
+        # print(keys)
+        data = df.loc[(df["Ort"] == keys[0]) & (df["Sensor"] == keys[1]), ["Timestamp", "Messwert"]]
+        # print(df.loc[(df["Ort"] == keys[0]), "Messwert"])
+        print(data)
+
         global c
         fig.add_trace(
             go.Scatter(
-                x=df["Timestamp"],
-                y=df[key],
-                name=key,
+                x=data["Timestamp"],
+                y=data["Messwert"],
+                name=keys[1],
                 mode="lines+markers",
                 line=dict(color=colors[c])
             )
         )
         c += 1
 
-    if figure_list[0]:
-        create_trace("Beleuchtung")
-    if figure_list[1]:
-        create_trace("Temperatur")
+    for i in df["Sensor"].unique():
+        print(i)
+        create_trace([figure_list[0], i])
+
 
     fig.update_layout(
         xaxis=axis_layout,
@@ -141,13 +164,13 @@ def create_figure(*args, **kwargs):
         showlegend=True,
         legend_orientation='h',
         title={
-            "text": "P L O T S",
+            "text": "M E S S W E R T E",
             'x': 0.5,
             "xanchor": "center",
             "font": {"size": 25}
         },
         xaxis_title="Runtime",
-        height=1000
+        height=800
     )
 
     return [dcc.Graph(figure=fig)]

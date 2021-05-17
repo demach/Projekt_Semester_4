@@ -15,6 +15,8 @@ import sqlite3 as sql
 with open('settings.json', 'r') as rd:
     settings = json.loads(rd.read())
 
+ort = ""
+
 #mqtt_broker = settings['GENERAL']['mqtt_broker']
 #mqtt_port = settings['GENERAL']['ports']['mqtt']
 # print(mqtt_broker, mqtt_port)
@@ -77,26 +79,28 @@ def update_page(url):
                     return [not_found]
 
 #this callback updates the plot on evaluation page
-@app.callback(
-    [Output("plot-div", "children")],
-    [Input("beleuchtung-checkbox", "checked"),
-    Input("temperatur-checkbox", "checked"),]
-)
-def callback05(beleuchtung_check, temperatur_check):
-    return Sites.EVALUATION.create_figure(beleuchtung_check, temperatur_check)
+# @app.callback(
+#     [Output("plot-div", "children")],
+#     [Input("messwert-checkbox", "checked"),
+#     Input("sensor-checkbox", "checked"),
+#     Input("ort-checkbox", "checked"),]
+# )
+# def callback05(messwert_check, sensor_check, ort_check):
+#     return Sites.EVALUATION.create_figure(messwert_check, sensor_check, ort_check)
 
 
-#this callback updates selection for plot if show-all button is triggered
-@app.callback(
-    [Output("beleuchtung-checkbox", "checked"),
-    Output("temperatur-checkbox", "checked")],
-    [Input("show-all-button", "n_clicks")]
-)
-def callback06(n_clicks):
-    if n_clicks:
-        return True, True
-    else:
-        raise PreventUpdate
+# #this callback updates selection for plot if show-all button is triggered
+# @app.callback(
+#     [Output("messwert-checkbox", "checked"),
+#     Output("sensor-checkbox", "checked"),
+#     Output("ort-checkbox", "checked")],
+#     [Input("show-all-button", "n_clicks")]
+# )
+# def callback06(n_clicks):
+#     if n_clicks:
+#         return True, True, True
+#     else:
+#         raise PreventUpdate
 
 
 #this callback is responsible for the slider on the control page
@@ -154,7 +158,9 @@ def buttonred(red_click, green_click, blue_click):
     Input('Ortsauswahl', 'value')
 )
 def drop_update(value):
+    global ort
     if value != None:
+        ort = value
         return f"You have selected {value}"
     else:
         return "Please select a location"
@@ -165,6 +171,7 @@ def drop_update(value):
     State("Ortsinput", "value")
 )
 def updateOrte(n_clicks,input1):
+    
     if input1 != None:
         conn = sql.connect(settings["GENERAL"]["db_path"])
         #print(settings["db_path"])
@@ -174,15 +181,32 @@ def updateOrte(n_clicks,input1):
             conn.commit()
         except:
             pass
-        df = pd.read_sql('SELECT * from Orte', conn)
-        print(df)
+        df_orte = pd.read_sql('SELECT * from Orte', conn)
+        print(df_orte)
         conn.close()
 
         
 
-        return [{"label":i, "value":i} for i in df["Ortsbezeichnung"].unique()]
+        return [{"label":i, "value":i} for i in df_orte["Ortsbezeichnung"].unique()]
     else:
         return [{"label":i, "value":i} for i in Sites.HOME.df["Ortsbezeichnung"].unique()]
+
+
+
+@app.callback(
+    Output("tab-content", "children"),
+    [Input("tabs", "active_tab")],
+)
+def render_tab_content(active_tab):
+    """
+    This callback takes the 'active_tab' property as input, as well as the
+    stored graphs, and renders the tab content depending on what the value of
+    'active_tab' is.
+    """
+    if active_tab is not None:
+        return Sites.EVALUATION.create_figure(active_tab)
+    return "No tab selected"
+
 
 
 app.config['suppress_callback_exceptions'] = True
