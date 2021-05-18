@@ -1,27 +1,28 @@
 import random
 import time
-
+import json
+import sqlite3 as sql
 from paho.mqtt import client as mqtt_client
-import numpy as np
+import pandas as pd
 
-start_broker = "192.168.178.77"
-start_port = 1883
-start_topic = "/home/anotherone"
-client_id = f"python-mqtt-{random.randint(0, 1000)}"
+with open('settings.json', 'r') as rd:
+    settings = json.loads(rd.read())
+print(settings)
+broker = settings["GENERAL"]["mqtt_broker"]
+port = settings["GENERAL"]["ports"]["mqtt"]
+topic = "projekt4"
+client_id = f"backend_{random.randint(0, 1000)}"
 
-Tiefpass = 0
-INPUTS = 2
-PERIOD = 3
-ADCMODE = 10 * INPUTS * PERIOD
-MAX = 1000
-array = np.zeros((MAX, INPUTS), np.float16)
+conn = sql.connect(settings["GENERAL"]["db_path"])
+cursor = conn.cursor()
 
 count = 0
 
-def connect_mqtt(broker=start_broker, port=start_port) -> mqtt_client:
+def connect_mqtt(broker=broker, port=port) -> mqtt_client:
     def on_connect(client, userdata, flags, rc):
         if rc == 0:
             print("Connected to MQTT Broker")
+            client.subscribe("#")
         else:
             print("Failed to connect, return code %d\n", rc)
 
@@ -31,7 +32,7 @@ def connect_mqtt(broker=start_broker, port=start_port) -> mqtt_client:
     return client
 
 
-def publish(client, message, topic=start_topic):
+def publish(client, message, topic=topic):
     msg_count = 0
     # while True:
         # time.sleep(1)
@@ -53,28 +54,32 @@ def publish(client, message, topic=start_topic):
 
 
 def on_message(client, userdata, msg):
+    
     topic=msg.topic
-    m_decode=str(msg.payload.decode('utf-8', 'ignore'))
-    print("data Received type", type(m_decode))
-    print("data Received", m_decode)
-    print("converting from json to object")
-    m_in=json.loads(m_decode)
-    print(type(m_in))
+    
+    m_in=json.loads(msg.payload)
+    # print(type(m_in))
     print("m_in = = ", m_in)
+    print(list(m_in.keys())[-1], list(m_in.values())[-1])
+    cursor.execute("Insert into random values (?,?)", [f"{list(m_in.keys())[-1]}", f"{list(m_in.values())[-1]}"])
+    conn.commit()
 
 
 def run():
 
     client = connect_mqtt()
     client.on_message = on_message
-    client.loop_start()
-    publish(client)
-
+    # client.loop_start()
+    # publish(client, "hello")
+    client.loop_forever()
 
 
 
 if __name__ == '__main__':
     try:
         run()
+        
     except KeyError:
         print("Finished the program")
+    finally:
+        conn.close()
