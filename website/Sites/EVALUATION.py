@@ -59,7 +59,7 @@ def create_content(table=None):
     df = df.rename(columns={"Ort_ID": "Ort"})
 
     letzter_ort = df["Ort"].iloc[-1]
-    print(letzter_ort)
+    # print(letzter_ort)
 
     content = [
         html.Div(
@@ -138,7 +138,7 @@ def create_figure(*args, **kwargs):
         # print(keys)
         data = df.loc[(df["Ort"] == keys[0]) & (df["Sensor"] == keys[1]), ["Timestamp", "Messwert"]]
         # print(df.loc[(df["Ort"] == keys[0]), "Messwert"])
-        print(data)
+        # print(data)
 
         global c
         fig.add_trace(
@@ -153,7 +153,7 @@ def create_figure(*args, **kwargs):
         c += 1
 
     for i in df["Sensor"].unique():
-        print(i)
+        # print(i)
         create_trace([figure_list[0], i])
 
 

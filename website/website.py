@@ -160,8 +160,12 @@ def buttonred(red_click, green_click, blue_click):
 def drop_update(value):
     global ort
     if value != None:
-        ort = value
+        print(settings)
+        with open(settings["GENERAL"]["location_path"], "w") as file:
+            file.write(value)
+        
         return f"You have selected {value}"
+
     else:
         return "Please select a location"
 
@@ -182,7 +186,7 @@ def updateOrte(n_clicks,input1):
         except:
             pass
         df_orte = pd.read_sql('SELECT * from Orte', conn)
-        print(df_orte)
+        # print(df_orte)
         conn.close()
 
         
@@ -195,17 +199,20 @@ def updateOrte(n_clicks,input1):
 
 @app.callback(
     Output("tab-content", "children"),
-    [Input("tabs", "active_tab")],
+    [Input("tabs", "active_tab"),
+    Input("interval", "n_intervals")],
 )
-def render_tab_content(active_tab):
+def render_tab_content(active_tab, n):
     """
     This callback takes the 'active_tab' property as input, as well as the
     stored graphs, and renders the tab content depending on what the value of
     'active_tab' is.
     """
     if active_tab is not None:
+        # print("reload")
         return Sites.EVALUATION.create_figure(active_tab)
     return "No tab selected"
+
 
 
 

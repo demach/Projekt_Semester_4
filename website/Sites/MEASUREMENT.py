@@ -84,8 +84,8 @@ def create_table(data):
         style_data_conditional=[
             {
                 'if': {
-                    'filter_query': '{Temperatur} > 18 && {Temperatur} < 25',
-                    'column_id': 'Temperatur',
+                    'filter_query': '{Sensor_ID} = LM35 && {Messwert} >= 18 && {Messwert} < 25',
+                    'column_id': 'Messwert',
                 },
                 'backgroundColor': '#A9F5A9',
                 'color': 'black'
@@ -93,19 +93,19 @@ def create_table(data):
 
             {
                 'if': {
-                    'filter_query': '{Humidity} > 19 && {Humidity} < 41',
-                    'column_id': 'Humidity'
+                    'filter_query': '{Sensor_ID} = "Sensirion SCD30" && {Messwert} >= 400 && {Messwert} < 2000',
+                    'column_id': 'Messwert',
                 },
-                'backgroundColor': 'tomato',
-                'color': 'white'
+                'backgroundColor': '#A900A9',
+                'color': 'black'
             },
             {
                 'if': {
-                    'filter_query': '{CO2_Gehalt} > 2000',
-                    'column_id': 'CO2Gehalt'
+                    'filter_query': '{Sensor_ID} = DHT22 && {Messwert} >= 30 && {Messwert} < 60',
+                    'column_id': 'Messwert',
                 },
-                'backgroundColor': '#FF0000',
-                'color': 'white'
+                'backgroundColor': '#A9F500',
+                'color': 'black'
             },
 
             

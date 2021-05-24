@@ -17,6 +17,7 @@ def load_settings(name):
             selected[key] = settings[name][key]
     return selected
 
+control = settings["CONTROL"]['intervall']
 
 def create_app(name, content):
     settings = load_settings(name)
@@ -36,7 +37,7 @@ def create_app(name, content):
                         dbc.NavItem(dbc.NavLink('HOME', href=f"{link}/home")),
                         dbc.NavItem(dbc.NavLink('EVALUATION', href=f"{link}/evaluation")),
                         dbc.NavItem(dbc.NavLink('MEASUREMENT', href=f"{link}/measurement")),
-                        dbc.NavItem(dbc.NavLink('CONTROL', href=f"{link}/control")),
+                        #dbc.NavItem(dbc.NavLink('CONTROL', href=f"{link}/control")),
 
                     ],
                     brand=settings['name'],
@@ -51,6 +52,11 @@ def create_app(name, content):
                 ),
                 html.Div(id="test", style={'display': 'none'})
             ]
+            ),
+            dcc.Interval(
+                id="interval",
+                interval=control,
+                n_intervals=0
             )
         ]
     )

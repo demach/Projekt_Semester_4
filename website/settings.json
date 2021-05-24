@@ -2,19 +2,20 @@
     "GENERAL": {
         "name": "Luftqualitaetsanalyse",
 
-        "ip": "127.0.0.1",
+        "ip": "192.168.178.77",
         "ports": {
             "dash": "8080",
             "mqtt": 1883
         },
-	    "mqtt_broker": "127.0.0.1",
+	    "mqtt_broker": "192.168.178.77",
         "colors": {
             "primary": "#151515",
             "secondary": "#ffffff"
         },
-	    "db_path" : "./Datenbank.db"
+	    "db_path" : "./Datenbank.db",
+        "location_path": "./current_location.txt"
     },
     "CONTROL": {
-        "intervall": 0.5
+        "intervall": 60000
     }
 }
