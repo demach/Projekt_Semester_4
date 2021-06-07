@@ -81,6 +81,8 @@ def create_table(data):
         data=data.to_dict('records'), 
         columns=[{"name": i, "id": i} for i in data.columns],
         sort_action="native",
+        fixed_rows={"headers": True},
+        style_table={"height": 800},
         style_data_conditional=[
             {
                 'if': {

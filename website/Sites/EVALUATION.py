@@ -64,11 +64,39 @@ def create_content(table=None):
     content = [
         html.Div(
             children=[
-                html.Br(),
-                dbc.Tabs(
-                    generate_tabs(),           
-                    id="tabs",
-                    active_tab=letzter_ort,
+                dbc.Row(
+                    [
+                        dbc.Col(
+                            children=[
+                                html.Div(
+                                    children=[
+                                        html.Br(),
+                                        dbc.Tabs(
+                                            generate_tabs(),           
+                                            id="tabs",
+                                            active_tab=letzter_ort,
+                                        ),
+                                        
+                                    ]
+                                ),
+                                
+                            ]
+                                
+                        ),
+                        dbc.Col(
+                            children=[
+                                html.Br(),
+                                daq.ToggleSwitch(
+                                    id='toggle_interval',
+                                    value=True,
+                                    label="Toggle Auto-Update",
+                                    labelPosition="bottom",
+                                    color="#34eb37"
+                                ),
+                                
+                            ]
+                        )
+                    ]
                 ),
                 html.Div(id="tab-content", className="p-4"),
             ]
@@ -170,7 +198,7 @@ def create_figure(*args, **kwargs):
             "font": {"size": 25}
         },
         xaxis_title="Runtime",
-        height=800
+        height=750
     )
 
     return [dcc.Graph(figure=fig)]

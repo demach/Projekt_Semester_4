@@ -213,6 +213,15 @@ def render_tab_content(active_tab, n):
         return Sites.EVALUATION.create_figure(active_tab)
     return "No tab selected"
 
+@app.callback(
+    Output("interval", "disabled"),
+    Input("toggle_interval", "value")
+)
+def toggle_interval(value):
+    if value:
+        return False
+    else:
+        return True
 
 
 
