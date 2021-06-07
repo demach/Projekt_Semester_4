@@ -2,12 +2,12 @@
     "GENERAL": {
         "name": "Luftqualitaetsanalyse",
 
-        "ip": "192.168.178.77",
+        "ip": "192.168.0.101",
         "ports": {
             "dash": "8080",
             "mqtt": 1883
         },
-	    "mqtt_broker": "192.168.178.77",
+	    "mqtt_broker": "192.168.0.102",
         "colors": {
             "primary": "#151515",
             "secondary": "#ffffff"

@@ -87,24 +87,81 @@ def create_table(data):
                     'filter_query': '{Sensor_ID} = LM35 && {Messwert} >= 18 && {Messwert} < 25',
                     'column_id': 'Messwert',
                 },
-                'backgroundColor': '#A9F5A9',
+                'backgroundColor': '#E2efd9',
+                'color': 'black'
+            },
+            {
+                'if': {
+                    'filter_query': '{Sensor_ID} = LM35 && {Messwert} >= 25',
+                    'column_id': 'Messwert',
+                },
+                'backgroundColor': '#fbe4d5',
                 'color': 'black'
             },
 
             {
                 'if': {
-                    'filter_query': '{Sensor_ID} = "Sensirion SCD30" && {Messwert} >= 400 && {Messwert} < 2000',
+                    'filter_query': '{Sensor_ID} = LM35 && {Messwert} < 18',
                     'column_id': 'Messwert',
                 },
-                'backgroundColor': '#A900A9',
+                'backgroundColor': '#fbe4d5',
                 'color': 'black'
             },
+
+
+
             {
                 'if': {
-                    'filter_query': '{Sensor_ID} = DHT22 && {Messwert} >= 30 && {Messwert} < 60',
+                    'filter_query': '{Sensor_ID} = "Sensirion SCD30" && {Messwert} < 1000',
                     'column_id': 'Messwert',
                 },
-                'backgroundColor': '#A9F500',
+                'backgroundColor': '#E2efd9',
+                'color': 'black'
+            },
+
+            {
+                'if': {
+                    'filter_query': '{Sensor_ID} = "Sensirion SCD30" && {Messwert} >= 1000 && {Messwert} < 2000',
+                    'column_id': 'Messwert',
+                },
+                'backgroundColor': '#fff2cc',
+                'color': 'black'
+            },
+
+            {
+                'if': {
+                    'filter_query': '{Sensor_ID} = "Sensirion SCD30" && {Messwert} >= 2000',
+                    'column_id': 'Messwert',
+                },
+                'backgroundColor': '#fbe4d5',
+                'color': 'black'
+            },
+
+
+            {
+                'if': {
+                    'filter_query': '{Sensor_ID} = DHT22 && {Messwert} < 40',
+                    'column_id': 'Messwert',
+                },
+                'backgroundColor': '#fbe4d5',
+                'color': 'black'
+            },
+
+            {
+                'if': {
+                    'filter_query': '{Sensor_ID} = DHT22 && {Messwert} >= 40 && {Messwert} < 60',
+                    'column_id': 'Messwert',
+                },
+                'backgroundColor': '#E2efd9',
+                'color': 'black'
+            },
+
+            {
+                'if': {
+                    'filter_query': '{Sensor_ID} = DHT22 && {Messwert} >= 60',
+                    'column_id': 'Messwert',
+                },
+                'backgroundColor': '#fbe4d5',
                 'color': 'black'
             },
 

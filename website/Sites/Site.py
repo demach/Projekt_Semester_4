@@ -21,7 +21,7 @@ control = settings["CONTROL"]['intervall']
 
 def create_app(name, content):
     settings = load_settings(name)
-    app = dash.Dash(name, external_stylesheets=[dbc.themes.BOOTSTRAP])
+    app = dash.Dash(__name__)
     link = f"http://{settings['ip']}:{settings['ports']['dash']}"
     app.title = settings['name']
     app.layout = dbc.Container(
