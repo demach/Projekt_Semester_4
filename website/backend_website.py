@@ -96,27 +96,31 @@ def on_message(client, userdata, msg):
 
     
     topic=msg.topic
-    
-    m_in=json.loads(msg.payload)
-    # print(type(m_in))
-    print("m_in = = ", m_in)
-    print(list(m_in.keys())[-1], list(m_in.values())[-1])
-    cursor.execute("Insert into random values (?,?)", [f"{list(m_in.keys())[-1]}", f"{list(m_in.values())[-1]}"])
-    conn.commit()
-    for key in m_in.keys():
-        
+    print((msg.payload.decode("utf-8")))
+    #print(msg.payload)
+    if topic == "projekt4/messwerte":
+        print(msg.payload)
+        m_in=(msg.payload.decode("utf-8"))
+        message = json.loads(m_in)
+        print("message ", message)
+        print("m_in = = ", m_in)
+        print(list(message.keys())[-1], list(message.values())[-1])
+        #cursor.execute("Insert into random values (?,?)", [f"{list(m_in.keys())[-1]}", f"{list(m_in.values())[-1]}"])
+        #conn.commit()
+        for key in message.keys():
+            
 
-        for id, sensoren in sensor_dict.items():  # for name, age in dictionary.iteritems():  (for Python 2.x)
-            if sensoren == key:
-                current_sensor = id
-        print(current_sensor)
-        cursor.execute("insert into Messwerttabelle values (null, ?,?,?,?)", [datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),int(current_sensor), int(current_location), m_in[key]])
+            for id, sensoren in sensor_dict.items():  # for name, age in dictionary.iteritems():  (for Python 2.x)
+                if sensoren == key:
+                    current_sensor = id
+            print(current_sensor)
+            cursor.execute("insert into Messwerttabelle values (null, ?,?,?,?)", [datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),int(current_sensor), int(current_location), message[key]])
 
-    # cursor.execute("insert into Messwerttabelle values (null, ?,?,?,?)", [f"{datetime.datetime.now()}",1, int(current_location), uniform(10.0, 30.0)])
-    # cursor.execute("insert into Messwerttabelle values (null, ?,?,?,?)", [f"{datetime.datetime.now()}",2, int(current_location), uniform(400.0, 2000.0)])
-    # cursor.execute("insert into Messwerttabelle values (null, ?,?,?,?)", [f"{datetime.datetime.now()}",3, int(current_location), uniform(1.0, 100.0)])
-    conn.commit()
-    print("commit")
+        # cursor.execute("insert into Messwerttabelle values (null, ?,?,?,?)", [f"{datetime.datetime.now()}",1, int(current_location), uniform(10.0, 30.0)])
+        # cursor.execute("insert into Messwerttabelle values (null, ?,?,?,?)", [f"{datetime.datetime.now()}",2, int(current_location), uniform(400.0, 2000.0)])
+        # cursor.execute("insert into Messwerttabelle values (null, ?,?,?,?)", [f"{datetime.datetime.now()}",3, int(current_location), uniform(1.0, 100.0)])
+        conn.commit()
+        print("commit")
 
 
 

@@ -1,0 +1,25 @@
+{
+    "network":{
+        "ssid":"projekt4_sinddiebesten",
+        "psk":"projekt4"
+        },
+    "mqtt":{
+        "broker":"192.168.0.100",
+        "user":"",
+        "psk":"",
+        "port":1883,
+        "topic":"projekt4",
+        "id":"esp32_projekt4"
+        },
+    "led_strip":{
+        "pin":5,
+        "pixel":60
+        },
+    "sensor":{
+        
+        "SCD30":{"SDA":21, "SCL":22},
+        "ADS1115":{"SDA":16, "SCL":17}
+        }
+    }
+
+        

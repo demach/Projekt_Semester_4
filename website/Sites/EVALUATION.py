@@ -105,7 +105,7 @@ def create_content(table=None):
 
 
 # colors for traces in plots
-colors = ["rgb(0,0,0)", "rgb(0,255,100)", "rgb(255,0,10)"]
+colors = ["rgb(0,0,0)", "rgb(0,255,100)", "rgb(255,0,10)",  "rgb(255,0,10)"]
 
 # standard axis layout for graphs
 axis_layout = dict(
